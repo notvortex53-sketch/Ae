@@ -1,23 +1,45 @@
 name: Unzip Bot
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
+    paths:
+      - 'aether-bot-v3.zip'
+
+permissions:
+  contents: write
 
 jobs:
   unzip:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
 
-      - name: Unzip bot
-        run: unzip -o aether-bot-v3.zip
+      - name: Unzip bot archive
+        run: |
+          if [ -f aether-bot-v3.zip ]; then
+            unzip -o -q aether-bot-v3.zip
+          else
+            echo "Archive not found: aether-bot-v3.zip"
+            exit 1
+          fi
 
       - name: Commit unzipped files
         run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "Unzipped bot files" || echo "Nothing to commit"
-          git push
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git commit -m "Unzip aether-bot files"
+          git push origin HEAD:${GITHUB_REF_NAME}
