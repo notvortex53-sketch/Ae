@@ -1,0 +1,31 @@
+# Aether Discord Bot — Fly.io config
+# Replace "aether-discord-bot" with your own app name (must be globally unique on Fly.io)
+
+app = "aether-discord-bot"
+primary_region = "sin"   # Singapore — closest to India; change to "bom" if available
+
+[build]
+  dockerfile = "Dockerfile"
+
+# No HTTP service — this is a pure background worker (Discord WebSocket bot)
+# Fly.io keeps it running as long as the process is alive
+
+[env]
+  NODE_ENV = "production"
+
+# Persistent volume mounted at /app/data — playlists and music channel config survive redeploys
+[[mounts]]
+  source      = "aether_data"
+  destination = "/app/data"
+
+[[mounts]]
+  source      = "aether_config"
+  destination = "/app/config"
+
+[deploy]
+  release_command = "node deploy-commands.js"
+
+# Keep one instance running at all times
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"
