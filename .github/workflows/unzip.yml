@@ -1,4 +1,4 @@
-name: Deploy to Fly.io
+name: Unzip and Deploy to Fly.io
 
 on:
   push:
@@ -11,9 +11,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Unzip bot
+        run: unzip -o aether-bot-v4.zip
+
       - uses: superfly/flyctl-actions/setup-flyctl@master
 
       - name: Deploy
         run: flyctl deploy --remote-only
+        working-directory: aether-bot
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
